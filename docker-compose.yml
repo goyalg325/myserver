@@ -1,0 +1,19 @@
+version: '3'
+services:
+  postgres:
+    container_name: postgres
+    image: postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=mydb
+    ports:
+      - 6500:5432
+  adminer:
+    container_name: adminer
+    image: adminer
+    ports:
+      - 8080:8080
+networks:
+  default:
+    name: my-network
