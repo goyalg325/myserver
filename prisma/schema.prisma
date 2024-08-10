@@ -25,3 +25,11 @@ model Users{
   password String 
   role      Role     @default(Editor)
  }
+
+model Pages {
+  id          Int      @id @default(autoincrement())
+  title       String   @unique
+  contentPath String   @unique
+  author      String
+  category    String
+}

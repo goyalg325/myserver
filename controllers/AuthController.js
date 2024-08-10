@@ -4,6 +4,11 @@ import { loginSchema, registerSchema } from "../validations/authValidation.js";
 import bcrypt from 'bcryptjs' 
 import { messages } from "@vinejs/vine/defaults";
 import jwt from 'jsonwebtoken'
+import { Role } from "@prisma/client";
+import { SignJWT } from 'jose';
+import { TextEncoder } from 'util';
+
+const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
 
 class AuthController {
   static async register(req, res) {
@@ -68,11 +73,14 @@ class AuthController {
         }
         // issue token 
         const payloadData = {
-          username : finduser.username
+          username : finduser.username,
+          role : finduser.role
         }
-        const token = jwt.sign(payloadData,process.env.JWT_SECRET,{
-          expiresIn : "1d"
-        })
+        const token = await new SignJWT(payloadData)
+        .setProtectedHeader({ alg: 'HS256' })
+        .setExpirationTime('1d')
+        .sign(JWT_SECRET);
+
         return res.json({
             message : "Logged in successfully",
             access_token : `Bearer ${token}`
@@ -90,6 +98,45 @@ class AuthController {
         return res.status(500).json({ error: "Internal Server Error" });
       }
   }
+
+ static async getAllUsers(req, res){
+    try {
+      // Check if the user is an admin
+      if (req.user.role !== 'Admin') {
+        return res.status(403).json({ error: 'Forbidden' });
+      }
+  
+      const users = await prisma.users.findMany({
+        select: {
+         username: true,
+          role: true,
+        },
+      });
+      res.json(users);
+    } catch (error) {
+      res.status(500).json({ error: 'Error fetching users' });
+    }
+  };
+
+static async deleteUser(req, res){
+    const { username } = req.params;
+  
+    try {
+      // Check if the user is an admin
+      if (req.user.role !== 'Admin') {
+        return res.status(403).json({ error: 'Forbidden' });
+      }
+  
+      await prisma.users.delete({
+        where: {
+          username,
+        },
+      });
+      res.json({ message: 'User deleted successfully' });
+    } catch (error) {
+      res.status(500).json({ error: 'Error deleting user' });
+    }
+  };
 }
 
 export default AuthController;
