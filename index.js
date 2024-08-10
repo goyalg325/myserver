@@ -10,7 +10,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = process.env.PORT || 3001;
+const port = process.env.PORT || 3001;
 
 // Security middlewares
 app.use(helmet());
@@ -42,4 +42,4 @@ app.get('/', (req, res) => {
 import ApiRoutes from './routes/api.js';
 app.use('/api', ApiRoutes);
 
-app.listen(PORT, () => console.log(`server started on port ${PORT}`));
+app.listen(port, () => console.log(`server started on port ${port}`));
