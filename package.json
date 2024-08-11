@@ -6,12 +6,14 @@
   
   
   
+  
     "scripts": {
-      "start": "prisma migrate deploy && node index.js",
+      "start": "node index.js",
       "server": "nodemon index.js",
       "prisma:generate": "prisma generate",
       "build": "npm run prisma:generate"
     },
+  
   
   
   
