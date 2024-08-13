@@ -4,7 +4,7 @@ import { loginSchema, registerSchema } from "../validations/authValidation.js";
 import bcrypt from 'bcryptjs' 
 import { messages } from "@vinejs/vine/defaults";
 import jwt from 'jsonwebtoken'
-import { Role } from "@prisma/client";
+// import { Role } from "@prisma/client";
 import { SignJWT } from 'jose';
 import { TextEncoder } from 'util';
 
