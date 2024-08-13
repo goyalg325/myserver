@@ -11,11 +11,10 @@ router.post('/auth/register', AuthController.register);
 router.post('/auth/login', AuthController.login);
 
 
-const largeBodyParser = express.json({ limit: '50mb' });
 router.post('/pages', authMiddleware, largeBodyParser, validateContentType, PageController.createPage);
 router.get('/pages/:title', PageController.getPage);
 router.get('/admin/pages', authMiddleware, PageController.getAllPages);
-router.put('/pages/:title', authMiddleware, largeBodyParser, validateContentType, PageController.updatePage);
+router.put('/pages/:title', authMiddleware, validateContentType, PageController.updatePage);
 router.delete('/pages/:title', authMiddleware, PageController.deletePage);
 // router.get('/pages/category/:category', authMiddleware, PageController.getPagesByCategory);
 

@@ -16,7 +16,7 @@ const port = process.env.PORT || 3001;
 app.use(helmet());
 app.use(cors({
   origin: process.env.FRONTEND_URL,
-  methods: ['GET', 'POST', 'PUT']
+  methods: ['GET', 'POST', 'PUT', 'OPTIONS']
 }));
 
 const limiter = rateLimit({
@@ -35,6 +35,7 @@ app.use(express.urlencoded({ extended: false, limit: '50mb' }));
 app.use('/content', express.static(path.join(__dirname, 'public', 'content')));
 
 app.get('/', (req, res) => {
+  console.log("REQ", req);
   return res.send('working');
 });
 
