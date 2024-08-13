@@ -11,7 +11,7 @@ router.post('/auth/register', AuthController.register);
 router.post('/auth/login', AuthController.login);
 
 
-router.post('/pages', authMiddleware, largeBodyParser, validateContentType, PageController.createPage);
+router.post('/pages', authMiddleware, validateContentType, PageController.createPage);
 router.get('/pages/:title', PageController.getPage);
 router.get('/admin/pages', authMiddleware, PageController.getAllPages);
 router.put('/pages/:title', authMiddleware, validateContentType, PageController.updatePage);
