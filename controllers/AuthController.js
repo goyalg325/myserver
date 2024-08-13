@@ -48,6 +48,8 @@ class AuthController {
       if (error instanceof errors.E_VALIDATION_ERROR) {
         return res.status(400).json({ errors: error.messages });
       }
+
+      console.log(error);
     
      // Optionally handle other types of errors
       return res.status(500).json({ error: "Internal Server Error" });
