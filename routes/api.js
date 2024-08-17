@@ -7,7 +7,7 @@ import express from 'express';
 
 const router = Router();
 
-router.post('/auth/register', AuthController.register);
+router.post('/auth/register', authMiddleware,AuthController.register);
 router.post('/auth/login', AuthController.login);
 
 
@@ -20,6 +20,6 @@ router.delete('/pages/:title', authMiddleware, PageController.deletePage);
 
 router.get('/users', authMiddleware, AuthController.getAllUsers);
 router.delete('/users/:username', authMiddleware, AuthController.deleteUser);
-router.get('/pages',PageController.pagesByCategory)
+router.get('/pagesByCategory',PageController.pagesByCategory)
 
 export default router;
