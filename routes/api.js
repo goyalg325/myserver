@@ -23,4 +23,8 @@ router.delete('/users/:username', authMiddleware, AuthController.deleteUser);
 router.get('/pagesByCategory',PageController.pagesByCategory);
 router.put('/update-category', authMiddleware, PageController.updateCategory);
 
+router.get('/categories', PageController.getCategories);
+router.post('/categories', PageController.addCategory);
+router.delete('/categories', PageController.deleteCategory);
+
 export default router;
