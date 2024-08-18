@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { getCategories, saveCategories } from './categoriesManager';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -247,12 +248,83 @@ class PageController {
     }
   }
 
+  // static async getCategories(req, res) {
+  //   try {
+  //     const categoriesFilePath = path.join(__dirname, '..', 'categories.js');
+  //     const categoriesModule = await import(`file://${categoriesFilePath}`);
+  //     const categories = categoriesModule.default;
+
+  //     res.json(categories);
+  //   } catch (error) {
+  //     console.error("Error reading categories:", error);
+  //     res.status(500).json({ error: "An error occurred while reading categories." });
+  //   }
+  // }
+
+  // static async addCategory(req, res) {
+  //   try {
+  //     const { category } = req.body;
+
+  //     if (!category) {
+  //       return res.status(400).json({ error: 'Category is required.' });
+  //     }
+
+  //     const categoriesFilePath = path.join(__dirname, '..', 'categories.js');
+  //     const categoriesModule = await import(`file://${categoriesFilePath}`);
+  //     const categories = categoriesModule.default;
+
+  //     if (categories.includes(category)) {
+  //       return res.status(409).json({ error: 'Category already exists.' });
+  //     }
+
+  //     categories.push(category);
+
+  //     const newCategoriesContent = `const categories = ${JSON.stringify(categories, null, 2)};\n\nexport default categories;\n`;
+  //     await fs.writeFile(categoriesFilePath, newCategoriesContent, 'utf8');
+
+  //     res.status(201).json({ message: 'Category added successfully.', categories });
+  //   } catch (error) {
+  //     console.error("Error adding category:", error);
+  //     res.status(500).json({ error: "An error occurred while adding the category." });
+  //   }
+  // }
+
+  // static async deleteCategory(req, res) {
+  //   const categoriesFilePath = path.join(__dirname, '..', 'categories.js');
+  //   const { category } = req.body;
+    
+  //   if (!category) {
+  //     return res.status(400).json({ error: 'Category name is required.' });
+  //   }
+    
+  //   try {
+  //     console.log(`Attempting to delete category: ${category}`);
+  //     const categoriesModule = await import(`file://${categoriesFilePath}`);
+  //     let categories = categoriesModule.default;
+      
+  //     console.log(`Current categories: ${JSON.stringify(categories)}`);
+      
+  //     if (!categories.includes(category)) {
+  //       return res.status(404).json({ error: 'Category not found.' });
+  //     }
+      
+  //     categories = categories.filter(cat => cat !== category);
+  //     console.log(`Categories after deletion: ${JSON.stringify(categories)}`);
+      
+  //     const updatedCategories = `const categories = ${JSON.stringify(categories, null, 2)};\n\nexport default categories;\n`;
+      
+  //     await fs.writeFile(categoriesFilePath, updatedCategories, 'utf8');
+  //     console.log(`File written successfully`);
+      
+  //     res.status(200).json({ message: 'Category deleted successfully.' });
+  //   } catch (error) {
+  //     console.error('Error deleting category:', error);
+  //     res.status(500).json({ error: 'Failed to delete category.' });
+  //   }
+  // }
   static async getCategories(req, res) {
     try {
-      const categoriesFilePath = path.join(__dirname, '..', 'categories.js');
-      const categoriesModule = await import(`file://${categoriesFilePath}`);
-      const categories = categoriesModule.default;
-
+      const categories = await getCategories();
       res.json(categories);
     } catch (error) {
       console.error("Error reading categories:", error);
@@ -268,18 +340,14 @@ class PageController {
         return res.status(400).json({ error: 'Category is required.' });
       }
 
-      const categoriesFilePath = path.join(__dirname, '..', 'categories.js');
-      const categoriesModule = await import(`file://${categoriesFilePath}`);
-      const categories = categoriesModule.default;
+      let categories = await getCategories();
 
       if (categories.includes(category)) {
         return res.status(409).json({ error: 'Category already exists.' });
       }
 
       categories.push(category);
-
-      const newCategoriesContent = `const categories = ${JSON.stringify(categories, null, 2)};\n\nexport default categories;\n`;
-      await fs.writeFile(categoriesFilePath, newCategoriesContent, 'utf8');
+      await saveCategories(categories);
 
       res.status(201).json({ message: 'Category added successfully.', categories });
     } catch (error) {
@@ -289,7 +357,6 @@ class PageController {
   }
 
   static async deleteCategory(req, res) {
-    const categoriesFilePath = path.join(__dirname, '..', 'categories.js');
     const { category } = req.body;
     
     if (!category) {
@@ -298,8 +365,7 @@ class PageController {
     
     try {
       console.log(`Attempting to delete category: ${category}`);
-      const categoriesModule = await import(`file://${categoriesFilePath}`);
-      let categories = categoriesModule.default;
+      let categories = await getCategories();
       
       console.log(`Current categories: ${JSON.stringify(categories)}`);
       
@@ -310,10 +376,8 @@ class PageController {
       categories = categories.filter(cat => cat !== category);
       console.log(`Categories after deletion: ${JSON.stringify(categories)}`);
       
-      const updatedCategories = `const categories = ${JSON.stringify(categories, null, 2)};\n\nexport default categories;\n`;
-      
-      await fs.writeFile(categoriesFilePath, updatedCategories, 'utf8');
-      console.log(`File written successfully`);
+      await saveCategories(categories);
+      console.log(`Categories saved successfully`);
       
       res.status(200).json({ message: 'Category deleted successfully.' });
     } catch (error) {
