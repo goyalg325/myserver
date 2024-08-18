@@ -295,25 +295,31 @@ class PageController {
     if (!category) {
       return res.status(400).json({ error: 'Category name is required.' });
     }
-
+    
     try {
+      console.log(`Attempting to delete category: ${category}`);
       const categoriesModule = await import(`file://${categoriesFilePath}`);
       let categories = categoriesModule.default;
-
+      
+      console.log(`Current categories: ${JSON.stringify(categories)}`);
+      
       if (!categories.includes(category)) {
         return res.status(404).json({ error: 'Category not found.' });
       }
-
+      
       categories = categories.filter(cat => cat !== category);
+      console.log(`Categories after deletion: ${JSON.stringify(categories)}`);
+      
       const updatedCategories = `const categories = ${JSON.stringify(categories, null, 2)};\n\nexport default categories;\n`;
-
+      
       await fs.writeFile(categoriesFilePath, updatedCategories, 'utf8');
+      console.log(`File written successfully`);
+      
       res.status(200).json({ message: 'Category deleted successfully.' });
     } catch (error) {
       console.error('Error deleting category:', error);
       res.status(500).json({ error: 'Failed to delete category.' });
     }
   }
-
 }
 export default PageController;
