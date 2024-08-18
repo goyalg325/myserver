@@ -217,7 +217,35 @@ class PageController {
     }
   }
   
+  static async updateCategory(req, res) {
+    try {
+      const { title, category } = req.body;
 
+      if (!title || !category) {
+        return res.status(400).json({ error: 'Title and category are required.' });
+      }
+
+      const page = await prisma.pages.findUnique({
+        where: { title },
+      });
+
+      if (!page) {
+        return res.status(404).json({ error: 'Page not found.' });
+      }
+
+      const updatedPage = await prisma.pages.update({
+        where: { title },
+        data: {
+          category,
+        },
+      });
+
+      res.json({ message: 'Category updated successfully.', page: updatedPage });
+    } catch (error) {
+      console.error('Error updating category:', error);
+      res.status(500).json({ error: 'An error occurred while updating the category.' });
+    }
+  }
 
 
 }
