@@ -3,7 +3,9 @@ import { v4 as uuidv4 } from 'uuid';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { getCategories, saveCategories } from './categoriesManager';
+import categoriesManager from './categoriesManager.js';
+
+const { getCategories, saveCategories } = categoriesManager;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -322,7 +324,7 @@ class PageController {
   //     res.status(500).json({ error: 'Failed to delete category.' });
   //   }
   // }
-  static async getCategories(req, res) {
+  static async getCategory(req, res) {
     try {
       const categories = await getCategories();
       res.json(categories);

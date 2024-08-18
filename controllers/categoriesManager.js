@@ -1,6 +1,10 @@
-// categoriesManager.js
 import { promises as fs } from 'fs';
-import { join } from 'path';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+// Get __dirname equivalent for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const categoriesFilePath = join(__dirname, '..', 'categories.json');
 
