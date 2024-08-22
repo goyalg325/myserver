@@ -139,6 +139,42 @@ static async deleteUser(req, res){
       res.status(500).json({ error: 'Error deleting user' });
     }
   };
+
+  static async updateUserRole(req, res) {
+    try {
+      // Check if the user is an admin
+      if (req.user.role !== 'Admin') {
+        return res.status(403).json({ error: 'Forbidden' });
+      }
+
+      const { username, role } = req.body;
+
+      if (!username || !role) {
+        return res.status(400).json({ error: 'Username and role are required' });
+      }
+
+      // Check if the role is valid (Admin or Editor)
+      if (role !== 'Admin' && role !== 'Editor') {
+        return res.status(400).json({ error: 'Invalid role' });
+      }
+
+      // Update user role in the database
+      const updatedUser = await prisma.users.update({
+        where: { username },
+        data: { role },
+      });
+
+      return res.json({
+        status: 200,
+        message: 'User role updated successfully',
+        user: updatedUser,
+      });
+    } catch (error) {
+      console.error('Error updating user role:', error);
+      return res.status(500).json({ error: 'Internal Server Error' });
+    }
+  }
+
 }
 
 export default AuthController;

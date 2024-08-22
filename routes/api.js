@@ -26,5 +26,6 @@ router.put('/update-category', authMiddleware, PageController.updateCategory);
 router.get('/categories', PageController.getCategory);
 router.post('/categories', PageController.addCategory);
 router.delete('/categories', PageController.deleteCategory);
+router.put('/update-user-role', authMiddleware, AuthController.updateUserRole);
 
 export default router;
