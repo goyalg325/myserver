@@ -2,7 +2,8 @@ const categories = [
   "Miscellaneous",
   "Usecases",
   "Research",
-  "Creative"
+  "Creatives",
+  "Tutorials"
 ];
 
 export default categories;
