@@ -158,10 +158,20 @@ static async deleteUser(req, res){
         return res.status(400).json({ error: 'Invalid role' });
       }
 
+      // Check if the user exists
+      const userExists = await prisma.users.findUnique({
+        where: { username },
+      });
+
+      if (!userExists) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+
       // Update user role in the database
       const updatedUser = await prisma.users.update({
         where: { username },
         data: { role },
+        select: { username: true, role: true }, // Exclude password from the response
       });
 
       return res.json({
