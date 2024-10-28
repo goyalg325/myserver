@@ -7,8 +7,8 @@ import express from 'express';
 
 const router = Router();
 
-// router.post('/auth/register', authMiddleware,AuthController.register);
-router.post('/auth/register', AuthController.register);  //temp line ,switch to upper one
+router.post('/auth/register', authMiddleware,AuthController.register);
+// router.post('/auth/register', AuthController.register);  //temp line ,switch to upper one
 router.post('/auth/login', AuthController.login);
 
 
