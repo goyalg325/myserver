@@ -285,6 +285,9 @@ class PageController {
 
   static async getCategory(req, res) {
     try {
+
+      console.log("yeh hai teri categories",prisma.categories); // Should not be undefined
+
       const categoriesData = await prisma.categories.findMany({
         select: { name: true }
       });
