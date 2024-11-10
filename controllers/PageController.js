@@ -11,65 +11,101 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 class PageController {
-    static async createPage(req, res) {
-        try {
-          const { title, content, author, category } = req.body;
-      
-          // Validate input
-          if (!title || !content || !author || !category) {
+  static async createPage(req, res) {
+    try {
+        const { title, content, author, category } = req.body;
+
+        // Validate input
+        if (!title || !content || !author || !category) {
             return res.status(400).json({ error: "All fields are required" });
-          }
-      
-          // Check if a page with the same title already exists
-          const existingPageTitle = await prisma.pages.findUnique({
-            where: { title: title }
-          });
-      
-          if (existingPageTitle) {
-            return res.status(409).json({ error: "A page with this title already exists" });
-          }
-      
-          // Generate a unique filename
-          let filename;
-          let contentPath;
-          let existingPagePath;
-          do {
+        }
+
+        // Read and parse categories.json and directpage.json
+        const categoriesPath = path.join(__dirname, '..', 'categories.json');
+        const directPagesPath = path.join(__dirname, '..', 'directpage.json');
+
+        const categoriesData = JSON.parse(await fs.readFile(categoriesPath, 'utf8'));
+        const categories = categoriesData.categories || [];  // Access the "categories" array directly
+
+        const directPagesData = JSON.parse(await fs.readFile(directPagesPath, 'utf8'));
+        let directPages = directPagesData.directPages || []; // Ensure it's an array
+
+        // Check if category already exists
+        const categoryExists = categories.includes(category);
+
+        // Check if page title and category are the same
+        if (categoryExists && title === category) {
+            return res.status(400).json({ error: "Page title and category name can't be the same" });
+        }
+
+        // If category exists, check if a page with the same title and category exists
+        if (categoryExists) {
+          const existingPage = await prisma.pages.findFirst({
+            where: {
+                title: title
+            }
+        });
+        
+
+            if (existingPage) {
+                return res.status(409).json({ error: "A page with this title already exists in the same category" });
+            }
+        } else {
+            // Category does not exist, so add it to directpage.json if page title is unique
+            const existingPage = await prisma.pages.findUnique({
+                where: { title: title }
+            });
+
+            if (existingPage) {
+                return res.status(409).json({ error: "A page with this title already exists" });
+            }
+
+            // Add the new category to directPages array and save it
+            directPages.push(category);
+            await fs.writeFile(directPagesPath, JSON.stringify({ directPages }, null, 2));
+        }
+
+        // Generate a unique filename
+        let filename;
+        let contentPath;
+        let existingPagePath;
+        do {
             filename = `${uuidv4()}.txt`;
             contentPath = `/content/${filename}`;
             existingPagePath = await prisma.pages.findUnique({
-              where: { contentPath: contentPath }
+                where: { contentPath: contentPath }
             });
-          } while (existingPagePath);
-      
-          const filePath = path.join(__dirname, '..', 'public', 'content', filename);
-      
-          // Write content to file
-          await fs.writeFile(filePath, content, 'utf8');
-      
-          // Create new page in database
-          const newPage = await prisma.pages.create({
+        } while (existingPagePath);
+
+        const filePath = path.join(__dirname, '..', 'public', 'content', filename);
+
+        // Write content to file
+        await fs.writeFile(filePath, content, 'utf8');
+
+        // Create new page in database
+        const newPage = await prisma.pages.create({
             data: {
-              title,
-              contentPath,
-              author,
-              category,
+                title,
+                contentPath,
+                author,
+                category,
             },
-          });
-      
-          res.status(201).json({
+        });
+
+        res.status(201).json({
             message: "Page created successfully",
             page: {
-              id: newPage.id,
-              title: newPage.title,
-              author: newPage.author,
-              category: newPage.category,
-             },
-          });
-        } catch (error) {
-          console.error("Error creating page:", error);
-          res.status(500).json({ error: "An error occurred while creating the page" });
-        }
-      }
+                id: newPage.id,
+                title: newPage.title,
+                author: newPage.author,
+                category: newPage.category,
+            },
+        });
+    } catch (error) {
+        console.error("Error creating page:", error);
+        res.status(500).json({ error: "An error occurred while creating the page" });
+    }
+}
 
       static async getPage(req, res) {
         try {
@@ -176,32 +212,48 @@ class PageController {
   }
 
   static async deletePage(req, res) {
-      try {
-          const { title } = req.params;
+    try {
+      const { title } = req.params;
 
-          // Find the page in the database by title
-          const page = await prisma.pages.findUnique({
-              where: { title: title },
-          });
+      // Find the page in the database by title
+      const page = await prisma.pages.findUnique({
+        where: { title: title },
+      });
 
-          if (!page) {
-              return res.status(404).json({ error: "Page not found" });
-          }
-
-          // Delete the content file
-          const filePath = path.join(__dirname, '..', 'public', page.contentPath);
-          await fs.unlink(filePath);
-
-          // Delete the page from the database
-          await prisma.pages.delete({
-              where: { title: title },
-          });
-
-          res.json({ message: "Page deleted successfully" });
-      } catch (error) {
-          console.error("Error deleting page:", error);
-          res.status(500).json({ error: "An error occurred while deleting the page" });
+      if (!page) {
+        return res.status(404).json({ error: "Page not found" });
       }
+
+      // Check if title equals category
+      if (title === page.category) {
+        const directPagesPath = path.join(__dirname, '..', 'directpage.json');
+        
+        // Read and parse the direct pages JSON file
+        const directPagesData = JSON.parse(await fs.readFile(directPagesPath, 'utf8'));
+        let directPages = directPagesData.directPages || [];
+
+        // Remove the title from the array if it exists
+        directPages = directPages.filter(pageTitle => pageTitle !== title);
+
+        // Update the direct pages JSON file
+        directPagesData.directPages = directPages;
+        await fs.writeFile(directPagesPath, JSON.stringify(directPagesData, null, 2));
+      }
+
+      // Delete the content file
+      const filePath = path.join(__dirname, '..', 'public', page.contentPath);
+      await fs.unlink(filePath);
+
+      // Delete the page from the database
+      await prisma.pages.delete({
+        where: { title: title },
+      });
+
+      res.json({ message: "Page deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting page:", error);
+      res.status(500).json({ error: "An error occurred while deleting the page" });
+    }
   }
   static async pagesByCategory(req, res) {
     try {
@@ -389,3 +441,6 @@ class PageController {
   }
 }
 export default PageController;
+
+
+
