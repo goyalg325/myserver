@@ -15,11 +15,11 @@ model Users {
 }
 
 model Pages {
-  id          Int    @id @default(autoincrement())
-  title       String @unique
-  author      String
-  category    String
-  contentPath String @unique
+  id       Int    @id @default(autoincrement())
+  title    String @unique
+  author   String
+  category String
+  content  String @db.Text    // Using @db.Text for unlimited length content storage
 }
 
 enum Role {
@@ -28,8 +28,8 @@ enum Role {
 }
 
 model Categories {
-  id       Int    @id @default(autoincrement())
-  name     String @unique
+  id   Int    @id @default(autoincrement())
+  name String @unique
 }
 
 model DirectPages {
